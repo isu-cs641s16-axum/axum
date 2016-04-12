@@ -1,0 +1,82 @@
+
+
+ty: Type :=
+| TUnit  : ty					(unit type)
+| TNat   : ty					(natural numbers)
+| TFn    : ty -> ty -> ty		(function types that takes two positive numbers m, n)
+| TPred  : ty -> ty				(predicate types that takes a positive number m)
+| TQuery : ty -> ty.			(query types that takes m denoting no. of columns)
+
+
+	query: Type   :=
+	| q_filter    : id -> id -> query                  (Filter Query)
+	| q_foreach   : id -> id -> query				   (ForEach Query)
+	| q_group     : id -> nat -> query				   (Group By Query)
+	| q_join      : id -> nat -> id -> nat -> query	   (Join Query)
+	| q_id        : id -> query.					   (To represent query by identifiers)
+	
+	statement : Type :=										
+	| s_store 		 : id -> statement						(Store statement)		
+	| s_assign 		 : id -> query -> statement				(Assigning queries to identifiers)
+	| s_load         : id -> statement						(Load statement)
+	| s_seq          : statement -> statement -> statement.	(A sequence of statements)
+	
+	
+	
+			                      q = q_id x
+                               Gamma x = TQuery m
+                            -----------------------                    (T_ID)
+                            Gamma |- q \in TQuery m
+
+                                q = q_filter x y
+                                     n <= m
+                      Gamma x = TQuery m  Gamma y = TPred n
+                      --------------------------------------           (T_Filter)
+                            Gamma |- q \in TQuery m
+
+                              q = q_foreach x y
+                      Gamma x = TQuery m  Gamma y = TFn m n
+                      ------------------------------------             (T_ForEach)
+                             Gamma |- q \in TQuery n
+
+
+                                q = q_group x y
+                                    n <= m
+                      Gamma x = TQuery m  Gamma y = TPred n
+                      ------------------------------------             (T_Group)
+                             Gamma |- q \in TQuery m
+
+                                q = q_join x m y n
+                                 m <= m'   n <= n'
+                      Gamma x = TQuery m'  Gamma y = TQuery n'
+                      ---------------------------------------          (T_Join)
+                             Gamma |- q \in TQuery (m'+n')
+
+							 
+							       Gamma x = T
+                             --------------------------                (T_Store)
+                             Gamma |- s_store \in TUnit
+
+                             -----------------------------             (T_Load)
+                             Gamma |- s_load x T \in TUnit
+
+                                  s = s_assign x q
+                      Gamma x not \in T      Gamma q = TQuery m
+                      -----------------------------------------        (T_Assign)
+                             Gamma |- s \in TUnit
+
+                       s = s_seq s1 s2       s1 = s_load x T
+                       Gamma x = TNat       Gamma s2 = TUnit
+                       -------------------------------------           (T_Seq_Load)
+                             Gamma |- s \in TUnit
+
+               s = s_seq s1 s2                   s1 = s_assign x q
+               Gamma x \in T  Gamma q \in TQuery  Gamma s2 = TUnit
+               ---------------------------------------------------     (T_Seq_Assign)
+                             Gamma |- s \in TUnit
+
+                                s = s_seq s1 s2
+                     Gamma s1 = TUnit        Gamma s2 = TUnit
+                     ----------------------------------------          (T_Seq)
+                             Gamma |- s \in TUnit
+
