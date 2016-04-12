@@ -1,29 +1,27 @@
 
 
 ty: Type :=
-| TUnit  : ty					(unit type)
-| TNat   : ty					(natural numbers)
-| TFn    : ty -> ty -> ty		(function types that takes two positive numbers m, n)
-| TPred  : ty -> ty				(predicate types that takes a positive number m)
-| TQuery : ty -> ty.			(query types that takes m denoting no. of columns)
+| TUnit  : ty                    (unit type)
+| TFn    : Nat -> Nat -> ty      (function type from m columns to n columns)
+| TPred  : Nat -> ty             (predicate types that takes a positive number m)
+| TQuery : ty -> ty.             (query types that takes m denoting no. of columns)
+
+query: Type   :=
+| q_filter    : id -> id -> query                  (Filter Query)
+| q_foreach   : id -> id -> query                  (ForEach Query)
+| q_group     : id -> nat -> query                 (Group By Query)
+| q_join      : id -> nat -> id -> nat -> query    (Join Query)
+| q_id        : id -> query.                       (To represent query by identifiers)
+
+statement : Type :=
+| s_store     : id -> statement                       (Store statement)        
+| s_assign    : id -> query -> statement              (Assigning queries to identifiers)
+| s_load      : id -> statement                       (Load statement)
+| s_seq       : statement -> statement -> statement.  (A sequence of statements)
 
 
-	query: Type   :=
-	| q_filter    : id -> id -> query                  (Filter Query)
-	| q_foreach   : id -> id -> query				   (ForEach Query)
-	| q_group     : id -> nat -> query				   (Group By Query)
-	| q_join      : id -> nat -> id -> nat -> query	   (Join Query)
-	| q_id        : id -> query.					   (To represent query by identifiers)
-	
-	statement : Type :=										
-	| s_store 		 : id -> statement						(Store statement)		
-	| s_assign 		 : id -> query -> statement				(Assigning queries to identifiers)
-	| s_load         : id -> statement						(Load statement)
-	| s_seq          : statement -> statement -> statement.	(A sequence of statements)
-	
-	
-	
-			                      q = q_id x
+
+                                  q = q_id x
                                Gamma x = TQuery m
                             -----------------------                    (T_ID)
                             Gamma |- q \in TQuery m
@@ -52,8 +50,8 @@ ty: Type :=
                       ---------------------------------------          (T_Join)
                              Gamma |- q \in TQuery (m'+n')
 
-							 
-							       Gamma x = T
+
+                                   Gamma x = T
                              --------------------------                (T_Store)
                              Gamma |- s_store \in TUnit
 
