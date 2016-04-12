@@ -1,3 +1,11 @@
+[Conventions]
+
+  n, m  : Positive Integers
+  x, y  : Identifiers
+  q     : Query
+  s     : Statement
+  T     : Type
+  Gamma : Typing Context
 
 
 ty: Type :=
