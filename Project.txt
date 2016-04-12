@@ -65,9 +65,9 @@ stmnt : Type :=
                             Gamma |- s \in TUnit
 
                       s = s_seq s1 s2      s1 = s_load x T
-                   Gamma |- x \in TNat    Gamma |- s2 \in TUnit
+                              Gamma |- s2 \in TUnit
                    --------------------------------------------      (T_Seq_Load)
-                             Gamma |- s \in TUnit
+                              Gamma |- s \in TUnit
 
                                s = s_seq s1 s2
 			      s1 = s_assign x q
