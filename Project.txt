@@ -27,12 +27,6 @@ stmnt : Type :=
 | s_store  : id -> stmnt.              (Store query)
 
 
-
-                                  q = q_id x
-                               Gamma x = TQuery m
-                            -----------------------                    (T_ID)
-                            Gamma |- q \in TQuery m
-
                                 q = q_filter x y
                                      n <= m
                       Gamma x = TQuery m  Gamma y = TPred n
