@@ -60,24 +60,24 @@ stmnt : Type :=
                           Gamma |- s_load x T \in TUnit
 
                                  s = s_assign x q
-                     Gamma x not \in T      Gamma q = TQuery m
-                     -----------------------------------------       (T_Assign)
+             forall T: ~Gamma |- x \in T    Gamma |- q \in TQuery m
+             ------------------------------------------------------  (T_Assign)
                             Gamma |- s \in TUnit
 
-                      s = s_seq s1 s2      s1 = s_load x T
-                              Gamma |- s2 \in TUnit
+                        s = s_seq s1 s2    s1 = s_load x T
+                            x:T, Gamma |- s2 \in TUnit
                    --------------------------------------------      (T_Seq_Load)
                               Gamma |- s \in TUnit
 
-                               s = s_seq s1 s2
-			      s1 = s_assign x q
-                             Gamma |- s2 \in TUnit
-                    Gamma |- x \in T    Gamma |- q \in TQuery
-                    -----------------------------------------        (T_Seq_Assign)
-                             Gamma |- s \in TUnit
+                                s = s_seq s1 s2
+			       s1 = s_assign x q
+                     Gamma |- x \in T    Gamma |- q \in TQuery
+                            x:T, Gamma |- s2 \in TUnit
+                     -----------------------------------------       (T_Seq_Assign)
+                              Gamma |- s \in TUnit
 
                                  s = s_seq s1 s2
-                       Gamma s1 = TUnit    Gamma s2 = TUnit
-                       ------------------------------------          (T_Seq)
+                   Gamma |- s1 \in TUnit    Gamma |- s2 \in TUnit
+                   ----------------------------------------------    (T_Seq)
                                 Gamma |- s \in TUnit
 
