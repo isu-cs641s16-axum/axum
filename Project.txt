@@ -53,8 +53,8 @@ stmnt : Type :=
 
 
                                 Gamma |- x \in T
-                           --------------------------                (T_Store)
-                           Gamma |- s_store \in TUnit
+                          ----------------------------               (T_Store)
+                          Gamma |- s_store x \in TUnit
 
                           -----------------------------              (T_Load)
                           Gamma |- s_load x T \in TUnit
