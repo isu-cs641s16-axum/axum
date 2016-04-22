@@ -40,12 +40,16 @@ Inductive tm: Type :=
 | t_id: id -> tm
 | t_filter: tm -> tm -> tm
 | t_foreach: tm -> tm -> tm 
+(* Omit group as of now:
+
 | t_group: tm -> tm -> tm
+
+*)
 | t_join: tm -> nat -> tm -> nat -> tm
-| t_load: id -> ty -> tm -> tm
-| t_assign: id -> ty -> tm -> tm
+| t_load: id -> tm
+| t_assign: id -> tm -> tm
 | t_seq: tm -> tm -> tm
-| t_store: id -> ty -> tm.
+| t_store: id -> tm.
 
 Module PartialMap.
 
@@ -162,11 +166,13 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- x \in TQuery m -> 
       Gamma |- y \in TFn m n -> 
       Gamma |- t_foreach x y \in TQuery n
+(*
   | T_Group : forall Gamma x y m n,
       Gamma |- x \in TQuery m -> 
       Gamma |- y \in TPred n-> 
       ble_nat n m = true ->
       Gamma |- t_group x y \in TQuery m
+*)
   | T_Join : forall Gamma x y m m' n n',
       Gamma |- x \in TQuery m' -> 
       Gamma |- y \in TPred n'->
@@ -174,27 +180,27 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       ble_nat n n' = true ->
       Gamma |- t_join x m y n \in TQuery(m'+n')
 
-  | T_Load : forall Gamma x y T1,
-      Gamma |- t_load x T1 y \in TUnit
+  | T_Load : forall Gamma x,
+      Gamma |- t_load x \in TUnit
   | T_Store : forall Gamma x T1,
       Gamma |- t_id x \in T1 ->
-      Gamma |- t_store x T1 \in TUnit
+      Gamma |- t_store x \in TUnit
 
 
-  | T_Assign : forall Gamma x q T1 m,
+  | T_Assign : forall Gamma x q m,
  (*   
       COQ throwing error trying to resolve it.
   
       ~ (Gamma |- t_id x \in T1) -> *)
       Gamma |- q \in TQuery m ->
-      Gamma |- t_assign x T1 q \in TUnit
+      Gamma |- t_assign x q \in TUnit
 
-  | T_SeqLoad : forall Gamma x y T1 s1 s2,
-      s1 = t_load x T1 y ->
+  | T_SeqLoad : forall Gamma x T1 s1 s2,
+      s1 = t_load x ->
       (extend Gamma x T1) |- s2 \in TUnit ->
       Gamma |- t_seq s1 s2 \in TUnit
   | T_SeqAssign : forall Gamma x q T1 s1 s2 m,
-      s1 = t_assign x T1 q ->
+      s1 = t_assign x q ->
       Gamma |- t_id x \in T1 ->
       Gamma |- q \in TQuery m ->
       (extend Gamma x T1) |- s2 \in TUnit ->
