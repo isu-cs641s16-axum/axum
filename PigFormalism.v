@@ -205,9 +205,10 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- q \in TQuery m ->
       (extend Gamma x T1) |- s2 \in TUnit ->
       Gamma |- t_seq s1 s2 \in TUnit
-  | T_Seq : forall Gamma s1 s2,
+  | T_SeqStore : forall Gamma x T1 s1 s2,
       Gamma |- s1 \in TUnit ->
-      Gamma |- s2 \in TUnit ->
+      Gamma |- t_id x \in T1 ->
+      s2 = t_store x ->
       Gamma |- t_seq s1 s2 \in TUnit
 
 where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
