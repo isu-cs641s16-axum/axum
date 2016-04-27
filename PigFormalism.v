@@ -17,7 +17,7 @@ Inductive tm: Type :=
 | t_group: tm -> tm -> tm     (* TODO: Re-introduce this later! *)
 *)
 | t_join: tm -> nat -> tm -> nat -> tm
-| t_load: id -> tm
+| t_load: id -> ty -> tm
 | t_assign: id -> tm -> tm
 | t_seq: tm -> tm -> tm
 | t_store: id -> tm.
@@ -126,13 +126,14 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t_id x \in T
 
   | T_Filter : forall Gamma x y m n,
-      Gamma |- x \in TQuery m -> 
-      Gamma |- y \in TPred n-> 
+      Gamma |- x \in TQuery m ->
+      Gamma |- y \in TPred n ->
       ble_nat n m = true ->
       Gamma |- t_filter x y \in TQuery m
+
   | T_ForEach : forall Gamma x y m n,
-      Gamma |- x \in TQuery m -> 
-      Gamma |- y \in TFn m n -> 
+      Gamma |- x \in TQuery m ->
+      Gamma |- y \in TFn m n ->
       Gamma |- t_foreach x y \in TQuery n
 (*
   | T_Group : forall Gamma x y m n,
@@ -142,36 +143,40 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t_group x y \in TQuery m
 *)
   | T_Join : forall Gamma x y m m' n n',
-      Gamma |- x \in TQuery m' -> 
-      Gamma |- y \in TPred n'->
+      Gamma |- x \in TQuery m' ->
+      Gamma |- y \in TQuery n'->
       ble_nat m m' = true ->
       ble_nat n n' = true ->
       Gamma |- t_join x m y n \in TQuery(m'+n')
 
-  | T_Load : forall Gamma x,
-      Gamma |- t_load x \in TUnit
-  | T_Store : forall Gamma x T1,
-      Gamma |- t_id x \in T1 ->
+  | T_Load : forall Gamma x T,
+      Gamma |- t_load x T \in TUnit
+
+  | T_Store : forall Gamma x m,
+      Gamma x = Some (TQuery m) ->
       Gamma |- t_store x \in TUnit
 
   | T_Assign : forall Gamma x q m,
       Gamma |- q \in TQuery m ->
       Gamma |- t_assign x q \in TUnit
 
-  | T_SeqLoad : forall Gamma x T1 s1 s2,
-      s1 = t_load x ->
-      (extend Gamma x T1) |- s2 \in TUnit ->
-      Gamma |- t_seq s1 s2 \in TUnit
-  | T_SeqAssign : forall Gamma x q T1 s1 s2 m,
-      s1 = t_assign x q ->
-      Gamma |- t_id x \in T1 ->
-      Gamma |- q \in TQuery m ->
-      (extend Gamma x T1) |- s2 \in TUnit ->
-      Gamma |- t_seq s1 s2 \in TUnit
-  | T_SeqStore : forall Gamma x T1 s1 s2,
+  | T_SeqLoad : forall Gamma x T s1 s2,
+      s1 = t_load x T ->
       Gamma |- s1 \in TUnit ->
-      Gamma |- t_id x \in T1 ->
-      s2 = t_store x ->
+      (extend Gamma x T) |- s2 \in TUnit ->
+      Gamma |- t_seq s1 s2 \in TUnit
+
+  | T_SeqAssign : forall Gamma x q s1 s2 m,
+      s1 = t_assign x q ->
+      Gamma |- q \in TQuery m ->
+      Gamma |- s1 \in TUnit ->
+      extend Gamma x (TQuery m) |- s2 \in TUnit ->
+      Gamma |- t_seq s1 s2 \in TUnit
+
+  | T_SeqStore : forall Gamma x s1 s2,
+      s1 = t_store x ->
+      Gamma |- s1 \in TUnit ->
+      Gamma |- s2 \in TUnit ->
       Gamma |- t_seq s1 s2 \in TUnit
 
 where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
