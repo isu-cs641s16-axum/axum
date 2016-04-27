@@ -118,10 +118,11 @@ Definition context := partial_map ty.
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
 Inductive has_type : context -> tm -> ty -> Prop :=
-(**  | T_Id : forall Gamma q x,
-      q = q_id x ->
-      Gamma |- x \in TQuery ->
-      Gamma |- q_id x \in TQuery **)
+
+  | T_Id : forall Gamma x T,
+      Gamma x = Some T ->
+      Gamma |- t_id x \in T
+
   | T_Filter : forall Gamma x y m n,
       Gamma |- x \in TQuery m -> 
       Gamma |- y \in TPred n-> 
@@ -150,7 +151,6 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   | T_Store : forall Gamma x T1,
       Gamma |- t_id x \in T1 ->
       Gamma |- t_store x \in TUnit
-
 
   | T_Assign : forall Gamma x q m,
       Gamma |- q \in TQuery m ->
