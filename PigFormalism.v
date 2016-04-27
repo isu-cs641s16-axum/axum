@@ -57,10 +57,6 @@ Definition partial_map (A:Type) := id -> option A.
 
 Definition empty {A:Type} : partial_map A := (fun _ => None). 
 
-(** Informally, we'll write [Gamma, x:T] for "extend the partial
-    function [Gamma] to also map [x] to [T]."  Formally, we use the
-    function [extend] to add a binding to a partial map. *)
-
 Definition extend {A:Type} (Gamma : partial_map A) (x:id) (T : A) :=
   fun x' => if eq_id_dec x x' then Some T else Gamma x'.
 
@@ -71,7 +67,7 @@ Proof.
 Qed.
 
 Lemma extend_neq : forall A (ctxt: partial_map A) x1 T x2,
-  x2 <> x1 ->                       
+  x2 <> x1 ->
   (extend ctxt x2 T) x1 = ctxt x1.
 Proof.
   intros. unfold extend. rewrite neq_id; auto.
@@ -82,76 +78,76 @@ End PartialMap.
 Definition context := partial_map ty.
 
 (* ################################### *)
-(** *** Typing Relation For Queries*)
+(** *** Typing Relation For Queries *)
 
-(** 
-                                  q = q_id x
-                               Gamma |- x \in TQuery m
-                            ---------------------------                (T_ID)
-                            Gamma |- q \in TQuery m
+(**
+                             q = q_id x
+                      Gamma |- x \in TQuery m
+                     -------------------------                (T_Id)
+                      Gamma |- q \in TQuery m
 
-                                q = q_filter x y
-                                     n <= m
-                    Gamma |- x \in TQuery m  Gamma |- y \in TPred n
-                    -----------------------------------------------    (T_Filter)
-                            Gamma |- q \in TQuery m
+                        q = q_filter x y
+                             n <= m
+            Gamma |- x \in TQuery m  Gamma |- y \in TPred n
+            -----------------------------------------------    (T_Filter)
+                    Gamma |- q \in TQuery m
 
-                              q = q_foreach x y
-                    Gamma |- x \in TQuery m  Gamma |- y \in TFn m n
-                    -----------------------------------------------    (T_ForEach)
-                             Gamma |- q \in TQuery n
-
-
-                                q = q_group x y
-                                    n <= m
-                      Gamma |- x \in TQuery m  Gamma |- y \in TPred n
-                      ------------------------------------             (T_Group)
-                             Gamma |- q \in TQuery m
-
-                                q = q_join x m y n
-                                 m <= m'   n <= n'
-                      Gamma |- x \in TQuery m'  Gamma |- y \in TQuery n'
-                      ---------------------------------------          (T_Join)
-                             Gamma |- q \in TQuery (m'+n')
+                      q = q_foreach x y
+            Gamma |- x \in TQuery m  Gamma |- y \in TFn m n
+            -----------------------------------------------    (T_ForEach)
+                     Gamma |- q \in TQuery n
 
 
-(** *** Typing Relation For Statements*)
+                        q = q_group x y
+                            n <= m
+           Gamma |- x \in TQuery m  Gamma |- y \in TPred n
+           -----------------------------------------------     (T_Group)
+                     Gamma |- q \in TQuery m
 
-(** 
-           
-                                    Gamma |- x \in T
-                             --------------------------                (T_Store)
-                             Gamma |- s_store x \in TUnit
+                        q = q_join x m y n
+                         m <= m'   n <= n'
+          Gamma |- x \in TQuery m'  Gamma |- y \in TQuery n'
+          -------------------------------------------------    (T_Join)
+                     Gamma |- q \in TQuery (m'+n')
 
-                             -----------------------------             (T_Load)
-                             Gamma |- s_load x T \in TUnit
 
-                                  s = s_assign x q
-               forall T: Gamma |- x not \in T  Gamma |- q \in TQuery m
-               ------------------------------------------------------  (T_Assign)
-                             Gamma |- s \in TUnit
+(** *** Typing Relation For Statements *)
 
-                       s = s_seq s1 s2       s1 = s_load x T
-                             x:T, Gamma |- s2 \in TUnit
-                       -------------------------------------           (T_Seq_Load)
-                             Gamma |- s \in TUnit
+(**
 
-               s = s_seq s1 s2                   s1 = s_assign x q
-               Gamma |- x \in T              Gamma |- q \in TQuery  
-                           x:T, Gamma |- s2 \in TUnit
-               ---------------------------------------------------     (T_Seq_Assign)
-                             Gamma |- s \in TUnit
+                            Gamma |- x \in T
+                     --------------------------                (T_Store)
+                     Gamma |- s_store x \in TUnit
 
-                                s = s_seq s1 s2
-                 Gamma |- s1 \in TUnit        Gamma |- s2 \in TUnit
-                 --------------------------------------------------    (T_Seq)
-                             Gamma |- s \in TUnit
+                     -----------------------------             (T_Load)
+                     Gamma |- s_load x T \in TUnit
+
+                          s = s_assign x q
+      forall T: Gamma |- x not \in T  Gamma |- q \in TQuery m
+      -------------------------------------------------------  (T_Assign)
+                     Gamma |- s \in TUnit
+
+               s = s_seq s1 s2       s1 = s_load x T
+                     x:T, Gamma |- s2 \in TUnit
+               -------------------------------------           (T_Seq_Load)
+                     Gamma |- s \in TUnit
+
+        s = s_seq s1 s2                 s1 = s_assign x q
+       Gamma |- x \in T              Gamma |- q \in TQuery  
+                   x:T, Gamma |- s2 \in TUnit
+       ---------------------------------------------------     (T_Seq_Assign)
+                     Gamma |- s \in TUnit
+
+                        s = s_seq s1 s2
+         Gamma |- s1 \in TUnit        Gamma |- s2 \in TUnit
+         --------------------------------------------------    (T_Seq)
+                     Gamma |- s \in TUnit
 
 *)
 **)
 
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
-    
+
 Inductive has_type : context -> tm -> ty -> Prop :=
 (**  | T_ID : forall Gamma q x,
       q = q_id x ->
