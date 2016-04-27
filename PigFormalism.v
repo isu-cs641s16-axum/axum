@@ -10,17 +10,16 @@ Inductive ty: Type :=
 | TQuery : nat -> ty.
 
 Inductive tm: Type :=
-| t_id: id -> tm
-| t_filter: tm -> tm -> tm
-| t_foreach: tm -> tm -> tm 
+| t_filter: id -> id -> tm
+| t_foreach: id -> id -> tm 
 (*
-| t_group: tm -> tm -> tm     (* TODO: Re-introduce this later! *)
+| t_group: id -> nat -> tm     (* TODO: Re-introduce this later! *)
 *)
-| t_join: tm -> nat -> tm -> nat -> tm
+| t_join: id -> nat -> id -> nat -> tm
 | t_load: id -> ty -> tm
 | t_assign: id -> tm -> tm
-| t_seq: tm -> tm -> tm
-| t_store: id -> tm.
+| t_store: id -> tm
+| t_seq: tm -> tm -> tm.
 
 Module PartialMap.
 
@@ -121,19 +120,15 @@ Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
 Inductive has_type : context -> tm -> ty -> Prop :=
 
-  | T_Id : forall Gamma x T,
-      Gamma x = Some T ->
-      Gamma |- t_id x \in T
-
   | T_Filter : forall Gamma x y m n,
-      Gamma |- x \in TQuery m ->
-      Gamma |- y \in TPred n ->
+      Gamma x = Some (TQuery m) ->
+      Gamma y = Some (TPred n) ->
       ble_nat n m = true ->
       Gamma |- t_filter x y \in TQuery m
 
   | T_ForEach : forall Gamma x y m n,
-      Gamma |- x \in TQuery m ->
-      Gamma |- y \in TFn m n ->
+      Gamma x = Some(TQuery m) ->
+      Gamma y = Some(TFn m n) ->
       Gamma |- t_foreach x y \in TQuery n
 (*
   | T_Group : forall Gamma x y m n,
@@ -143,22 +138,24 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t_group x y \in TQuery m
 *)
   | T_Join : forall Gamma x y m m' n n',
-      Gamma |- x \in TQuery m' ->
-      Gamma |- y \in TQuery n'->
+      Gamma x = Some(TQuery m') ->
+      Gamma y = Some(TQuery n') ->
       ble_nat m m' = true ->
       ble_nat n n' = true ->
       Gamma |- t_join x m y n \in TQuery(m'+n')
 
   | T_Load : forall Gamma x T,
+      Gamma x = None ->
       Gamma |- t_load x T \in TUnit
+
+  | T_Assign : forall Gamma x q m,
+      Gamma x = None ->
+      Gamma |- q \in TQuery m ->
+      Gamma |- t_assign x q \in TUnit
 
   | T_Store : forall Gamma x m,
       Gamma x = Some (TQuery m) ->
       Gamma |- t_store x \in TUnit
-
-  | T_Assign : forall Gamma x q m,
-      Gamma |- q \in TQuery m ->
-      Gamma |- t_assign x q \in TUnit
 
   | T_SeqLoad : forall Gamma x T s1 s2,
       s1 = t_load x T ->
