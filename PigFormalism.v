@@ -184,10 +184,6 @@ Inductive has_type : context -> tm -> ty -> Prop :=
 
 
   | T_Assign : forall Gamma x q m,
- (*   
-      COQ throwing error trying to resolve it.
-  
-      ~ (Gamma |- t_id x \in T1) -> *)
       Gamma |- q \in TQuery m ->
       Gamma |- t_assign x q \in TUnit
 
