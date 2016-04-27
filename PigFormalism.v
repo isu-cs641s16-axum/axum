@@ -1,49 +1,18 @@
 
 Require Export SfLib.
 
-(* Above combines query and stmnt *)
-(* Below separates query and stmnt *)
-
-(*
-Inductive tm: Type :=
-| t_query : query -> tm
-| t_stmnt : stmnt -> tm
-| t_id : id -> tm.
-*)
-
 Inductive ty: Type :=
 | TUnit : ty
 | TFn : nat -> nat -> ty
 | TPred : nat -> ty
 | TQuery : nat -> ty.
 
-(*
-
-Inductive tm : Type :=
-| t_id : id -> tm
-| t_query: query -> tm
-| t_stmnt : stmnt -> tm.
-
-Inductive query: Type :=
-| q_filter : id -> id -> query
-| q_foreach : id -> id -> query
-| q_group : id -> nat -> query
-| q_join : id -> nat -> id -> nat -> query.
-
-Inductive stmnt: Type :=
-| s_load : id -> ty -> stmnt
-| s_assign : id -> query -> stmnt
-| s_seq : stmnt -> stmnt -> stmnt
-| s_store : id -> stmnt.
-*)
 Inductive tm: Type :=
 | t_id: id -> tm
 | t_filter: tm -> tm -> tm
 | t_foreach: tm -> tm -> tm 
-(* Omit group as of now:
-
-| t_group: tm -> tm -> tm
-
+(*
+| t_group: tm -> tm -> tm     (* TODO: Re-introduce this later! *)
 *)
 | t_join: tm -> nat -> tm -> nat -> tm
 | t_load: id -> tm
@@ -83,7 +52,7 @@ Definition context := partial_map ty.
 (**
                              q = q_id x
                       Gamma |- x \in TQuery m
-                     -------------------------                (T_Id)
+                     -------------------------                 (T_Id)
                       Gamma |- q \in TQuery m
 
                         q = q_filter x y
@@ -149,7 +118,7 @@ Definition context := partial_map ty.
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
 Inductive has_type : context -> tm -> ty -> Prop :=
-(**  | T_ID : forall Gamma q x,
+(**  | T_Id : forall Gamma q x,
       q = q_id x ->
       Gamma |- x \in TQuery ->
       Gamma |- q_id x \in TQuery **)
