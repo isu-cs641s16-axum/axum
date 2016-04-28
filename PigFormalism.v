@@ -12,6 +12,7 @@ Inductive ty: Type :=
 | TInt: ty               (* An Atomic Schema Attribute Type *)
 | TBag: ty -> ty.        (* A Compound Schema Attribute Type *)
 
+
 Inductive schema_ty : ty -> Prop :=
 | STNil:
     schema_ty TNil
@@ -47,13 +48,17 @@ Inductive well_formed_ty: ty -> Prop :=
     well_formed_ty (TBag T).
 
 
+(* Indicates a column within a schema. Used in the JOIN query's BY clauses. *)
+Definition col: Type := nat.
+
+
 Inductive tm: Type :=
 | t_filter: id -> id -> tm
 | t_foreach: id -> id -> tm 
 (*
 | t_group: id -> nat -> tm     (* TODO: Re-introduce this later! *)
 *)
-| t_join: id -> nat -> id -> nat -> tm
+| t_join: id -> col -> id -> col -> tm
 | t_load: id -> ty -> tm
 | t_assign: id -> tm -> tm
 | t_store: id -> tm
