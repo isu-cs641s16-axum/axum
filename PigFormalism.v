@@ -65,6 +65,7 @@ Inductive tm: Type :=
 | t_seq: tm -> tm -> tm.
 
 
+(*
 Module PartialMap.
 
 Definition partial_map (A:Type) := id -> option A.
@@ -88,6 +89,7 @@ Proof.
 Qed.
 
 End PartialMap.
+*)
 
 Definition context := partial_map ty.
 
