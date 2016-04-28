@@ -5,9 +5,47 @@ Module logical.
 
 Inductive ty: Type :=
 | TUnit : ty
-| TFn : nat -> nat -> ty
-| TPred : nat -> ty
-| TQuery : nat -> ty.
+| TFn : ty -> ty -> ty
+| TPred : ty -> ty
+| TNil: ty               (* Schema Tuple Terminator *)
+| TCons: ty -> ty -> ty  (* Schema Tuple Extension Type *)
+| TInt: ty               (* An Atomic Schema Attribute Type *)
+| TBag: ty -> ty.        (* A Compound Schema Attribute Type *)
+
+Inductive schema_ty : ty -> Prop :=
+| STNil:
+    schema_ty TNil
+| STConsInt: forall T,
+    schema_ty T ->
+    schema_ty (TCons TInt T)
+| STConsBag: forall T1 T2,
+    schema_ty T1 ->
+    schema_ty T2 ->
+    schema_ty (TCons (TBag T1) T2).
+
+
+Inductive well_formed_ty: ty -> Prop :=
+| wfTUnit:
+    well_formed_ty TUnit
+| wfTFn: forall T1 T2,
+    schema_ty T1 ->
+    schema_ty T2 ->
+    well_formed_ty (TFn T1 T2)
+| wfTPred: forall T,
+    schema_ty T ->
+    well_formed_ty (TPred T)
+| wfTNil:
+    well_formed_ty TNil
+| wfTCons: forall T T1 T2,
+    T = TCons T1 T2 ->
+    schema_ty T ->
+    well_formed_ty T
+| wfTInt:
+    well_formed_ty TInt
+| wfTBag: forall T,
+    well_formed_ty T ->
+    well_formed_ty (TBag T).
+
 
 Inductive tm: Type :=
 | t_filter: id -> id -> tm
@@ -20,6 +58,7 @@ Inductive tm: Type :=
 | t_assign: id -> tm -> tm
 | t_store: id -> tm
 | t_seq: tm -> tm -> tm.
+
 
 Module PartialMap.
 
