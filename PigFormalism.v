@@ -12,7 +12,6 @@ Inductive ty: Type :=
 | TInt: ty               (* An Atomic Schema Attribute Type *)
 | TBag: ty -> ty.        (* A Compound Schema Attribute Type *)
 
-
 Inductive schema_ty : ty -> Prop :=
 | STNil:
     schema_ty TNil
@@ -24,7 +23,27 @@ Inductive schema_ty : ty -> Prop :=
     schema_ty T2 ->
     schema_ty (TCons (TBag T1) T2).
 
+Inductive udf_ty : ty -> Prop := 
+| UDFTFn: forall S1 S2,
+    schema_ty S1 ->
+    schema_ty S2 ->
+    udf_ty (TFn S1 S2)
+| UDFTPred: forall S,
+    schema_ty S ->
+    udf_ty S.
 
+Inductive loadable_ty : ty -> Prop :=
+| LTSchema: forall S,
+    schema_ty S ->
+    loadable_ty S
+| LTUDF: forall UDF,
+    udf_ty UDF ->
+    loadable_ty UDF.
+
+
+
+(* TODO: What do we really need this for? *)
+(*
 Inductive well_formed_ty: ty -> Prop :=
 | wfTUnit:
     well_formed_ty TUnit
@@ -46,7 +65,7 @@ Inductive well_formed_ty: ty -> Prop :=
 | wfTBag: forall T,
     well_formed_ty T ->
     well_formed_ty (TBag T).
-
+*)
 
 (* Indicates a column within a schema. Used in the JOIN query's BY clauses. *)
 Definition col: Type := nat.
@@ -55,9 +74,7 @@ Definition col: Type := nat.
 Inductive tm: Type :=
 | t_filter: id -> id -> tm
 | t_foreach: id -> id -> tm 
-(*
-| t_group: id -> nat -> tm     (* TODO: Re-introduce this later! *)
-*)
+| t_group: id -> col -> tm
 | t_join: id -> col -> id -> col -> tm
 | t_load: id -> ty -> tm
 | t_assign: id -> tm -> tm
@@ -91,12 +108,38 @@ Qed.
 End PartialMap.
 *)
 
+
+Fixpoint schema_column_is_int (t: ty) (c: col) : bool :=
+  match c with
+  | O =>    match t with
+            | TCons TInt _ => true
+            | _ => false
+            end
+  | S c' => match t with
+            | TCons _ t' => schema_column_is_int t' c'
+            | _ => false
+            end
+  end.
+
+
 Definition context := partial_map ty.
 
 (* ################################### *)
 (** *** Typing Relation For Queries *)
 
+
+
+(* TODO: Update These! *)
 (**
+
+conventions:
+ T : a type
+ S : a type which satsifies schema_ty
+ x, y: identifiers
+ s : a statement
+ q : a term of query form
+
+
                              q = q_id x
                       Gamma |- x \in TQuery m
                      -------------------------                 (T_Id)
@@ -166,41 +209,51 @@ Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
 Inductive has_type : context -> tm -> ty -> Prop :=
 
-  | T_Filter : forall Gamma x y m n,
-      Gamma x = Some (TQuery m) ->
-      Gamma y = Some (TPred n) ->
-      ble_nat n m = true ->
-      Gamma |- t_filter x y \in TQuery m
+  | T_Filter : forall Gamma x y S,
+      Gamma x = Some S ->
+      Gamma y = Some (TPred S) ->
+      schema_ty S ->
+      Gamma |- t_filter x y \in S
 
-  | T_ForEach : forall Gamma x y m n,
-      Gamma x = Some(TQuery m) ->
-      Gamma y = Some(TFn m n) ->
-      Gamma |- t_foreach x y \in TQuery n
-(*
-  | T_Group : forall Gamma x y m n,
-      Gamma |- x \in TQuery m -> 
-      Gamma |- y \in TPred n-> 
-      ble_nat n m = true ->
-      Gamma |- t_group x y \in TQuery m
-*)
-  | T_Join : forall Gamma x y m m' n n',
-      Gamma x = Some(TQuery m') ->
-      Gamma y = Some(TQuery n') ->
-      ble_nat m m' = true ->
-      ble_nat n n' = true ->
-      Gamma |- t_join x m y n \in TQuery(m'+n')
+  | T_ForEach : forall Gamma x y S1 S2,
+      Gamma x = Some(S1) ->
+      Gamma y = Some(TFn S1 S2) ->
+      schema_ty S1 ->
+      schema_ty S2 ->
+      Gamma |- t_foreach x y \in S2
+
+  | T_Group : forall Gamma x c S1 S2,
+      Gamma x = Some S1 ->
+      schema_ty S1 ->
+      schema_ty S2 ->
+      schema_column_is_int S1 c = true ->
+      S2 = TCons TInt (TBag S1) ->
+      Gamma |- t_group x c \in S2
+
+  | T_Join : forall Gamma x y cx cy S1 S2 S3,
+      Gamma x = Some(S1) ->
+      Gamma y = Some(S2) ->
+      schema_ty S1 ->
+      schema_ty S2 ->
+      schema_column_is_int S1 cx = true ->
+      schema_column_is_int S2 cy = true ->
+      (* TODO: Make S3 by concatentating S1 and S2 *)
+      Gamma |- t_join x cx y cx \in S3
 
   | T_Load : forall Gamma x T,
       Gamma x = None ->
+      loadable_ty T ->
       Gamma |- t_load x T \in TUnit
 
-  | T_Assign : forall Gamma x q m,
+  | T_Assign : forall Gamma x q S,
       Gamma x = None ->
-      Gamma |- q \in TQuery m ->
+      Gamma |- q \in S ->
+      schema_ty S ->
       Gamma |- t_assign x q \in TUnit
 
-  | T_Store : forall Gamma x m,
-      Gamma x = Some (TQuery m) ->
+  | T_Store : forall Gamma x S,
+      Gamma x = Some S ->
+      schema_ty S ->
       Gamma |- t_store x \in TUnit
 
   | T_SeqLoad : forall Gamma x T s1 s2,
@@ -209,15 +262,18 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       (extend Gamma x T) |- s2 \in TUnit ->
       Gamma |- t_seq s1 s2 \in TUnit
 
-  | T_SeqAssign : forall Gamma x q s1 s2 m,
+  | T_SeqAssign : forall Gamma x q s1 s2 S,
       s1 = t_assign x q ->
-      Gamma |- q \in TQuery m ->
+      Gamma |- q \in S ->
+      schema_ty S ->
       Gamma |- s1 \in TUnit ->
-      extend Gamma x (TQuery m) |- s2 \in TUnit ->
+      extend Gamma x S |- s2 \in TUnit ->
       Gamma |- t_seq s1 s2 \in TUnit
 
-  | T_SeqStore : forall Gamma x s1 s2,
+  | T_SeqStore : forall Gamma x s1 s2 S,
       s1 = t_store x ->
+      Gamma x = Some S ->
+      schema_ty S ->
       Gamma |- s1 \in TUnit ->
       Gamma |- s2 \in TUnit ->
       Gamma |- t_seq s1 s2 \in TUnit
