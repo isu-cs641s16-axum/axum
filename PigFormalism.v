@@ -302,7 +302,8 @@ Definition col: Type := nat.
 Inductive tm: Type :=
  | t_filter: id -> id -> tm
  | t_foreach: id -> id -> tm 
- | t_rearrange: id -> col -> tm
+ | t_lrearrange: id -> col -> tm
+ | t_grearrange: id -> col -> tm
  | t_package : id -> col -> tm
  | t_load: id -> ty -> tm
  | t_assign: id -> tm -> tm
@@ -449,11 +450,17 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       schema_ty S2 ->
       Gamma |- t_foreach x y \in S2
 
-  | T_ReArrange : forall Gamma x c S,
+  | T_LReArrange : forall Gamma x c S,
       Gamma x = Some S ->
       schema_ty S ->
       schema_column_is_int S c = true ->
-      Gamma |- t_rearrange x c \in S
+      Gamma |- t_lrearrange x c \in S
+      
+  | T_GReArrange : forall Gamma x c S,
+      Gamma x = Some S ->
+      schema_ty S ->
+      schema_column_is_int S c = true ->
+      Gamma |- t_grearrange x c \in S
 
   | T_Package : forall Gamma x c S1 S2,
       Gamma x = Some S1 ->
