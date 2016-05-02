@@ -108,7 +108,7 @@ Qed.
 End PartialMap.
 *)
 
-
+(* Provides evidence that a particular column of a schema is of type `TInt`. *)
 Inductive schema_column_is_int: ty -> col -> Prop :=
 
   | SchemaColumnIsIntZero: forall (T: ty),
@@ -384,19 +384,19 @@ Inductive loadable_ty : ty -> Prop :=
     udf_ty UDF ->
     loadable_ty UDF.
 
-(* Indicates a column within a schema. Used in the JOIN query's BY clauses. *)
 
-Fixpoint schema_column_is_int (t: ty) (c: col) : bool :=
-  match c with
-  | O =>    match t with
-            | TCons TInt _ => true
-            | _ => false
-            end
-  | S c' => match t with
-            | TCons _ t' => schema_column_is_int t' c'
-            | _ => false
-            end
-  end.
+(* Provides evidence that a particular column of a schema is of type `TInt`. *)
+Inductive schema_column_is_int: ty -> col -> Prop :=
+  | SchemaColumnIsIntZero: forall (T: ty),
+      schema_ty T ->
+      schema_column_is_int T O
+  | SchemaColumnIsIntSucc: forall (T THead TTail: ty) (c: col),
+      T = TCons THead TTail ->  (* Note that `THead` is unused. *)
+      schema_ty T ->
+      schema_column_is_int TTail c ->
+      schema_column_is_int T (S c).
+
+
 
 (* ################################### *)
 (** *** Typing Relation For Queries *)
@@ -499,20 +499,20 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   | T_LReArrange : forall Gamma x c S,
       Gamma x = Some S ->
       schema_ty S ->
-      schema_column_is_int S c = true ->
+      schema_column_is_int S c ->
       Gamma |- t_lrearrange x c \in S
-      
+
   | T_GReArrange : forall Gamma x c S,
       Gamma x = Some S ->
       schema_ty S ->
-      schema_column_is_int S c = true ->
+      schema_column_is_int S c ->
       Gamma |- t_grearrange x c \in S
 
   | T_Package : forall Gamma x c S1 S2,
       Gamma x = Some S1 ->
       schema_ty S1 ->
       schema_ty S2 ->
-      schema_column_is_int S1 c = true ->
+      schema_column_is_int S1 c ->
       S2 = TCons TInt (TBag S1) ->
       Gamma |- t_package x c \in S2
 
