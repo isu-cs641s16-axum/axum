@@ -109,17 +109,17 @@ End PartialMap.
 *)
 
 
-Fixpoint schema_column_is_int (t: ty) (c: col) : bool :=
-  match c with
-  | O =>    match t with
-            | TCons TInt _ => true
-            | _ => false
-            end
-  | S c' => match t with
-            | TCons _ t' => schema_column_is_int t' c'
-            | _ => false
-            end
-  end.
+Inductive schema_column_is_int: ty -> col -> Prop :=
+
+  | SchemaColumnIsIntZero: forall (T: ty),
+      schema_ty T ->
+      schema_column_is_int T O
+
+  | SchemaColumnIsIntSucc: forall (T THead TTail: ty) (c: col),
+      T = TCons THead TTail ->  (* Note that `THead` is unused. *)
+      schema_ty T ->
+      schema_column_is_int TTail c ->
+      schema_column_is_int T (S c).
 
 
 (* The concatenation of schemas T1 and T2 is T3. *)
@@ -272,7 +272,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma x = Some S1 ->
       schema_ty S1 ->
       schema_ty S2 ->
-      schema_column_is_int S1 c = true ->
+      schema_column_is_int S1 c ->
       S2 = TCons TInt (TBag S1) ->
       Gamma |- t_group x c \in S2
 
@@ -281,9 +281,9 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma y = Some(S2) ->
       schema_ty S1 ->
       schema_ty S2 ->
-      schema_column_is_int S1 cx = true ->
-      schema_column_is_int S2 cy = true ->
-      (* TODO: Make S3 by concatentating S1 and S2 *)
+      schema_column_is_int S1 cx ->
+      schema_column_is_int S2 cy ->
+      concatenated_schema S1 S2 S3 ->
       Gamma |- t_join x cx y cx \in S3
 
   | T_Load : forall Gamma x T,
