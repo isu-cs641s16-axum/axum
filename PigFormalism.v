@@ -12,6 +12,7 @@ Inductive ty: Type :=
 | TInt: ty               (* An Atomic Schema Attribute Type *)
 | TBag: ty -> ty.        (* A Compound Schema Attribute Type *)
 
+
 Inductive schema_ty : ty -> Prop :=
 | STNil:
     schema_ty TNil
@@ -23,6 +24,7 @@ Inductive schema_ty : ty -> Prop :=
     schema_ty T2 ->
     schema_ty (TCons (TBag T1) T2).
 
+
 Inductive udf_ty : ty -> Prop := 
 | UDFTFn: forall S1 S2,
     schema_ty S1 ->
@@ -32,6 +34,7 @@ Inductive udf_ty : ty -> Prop :=
     schema_ty S ->
     udf_ty S.
 
+
 Inductive loadable_ty : ty -> Prop :=
 | LTSchema: forall S,
     schema_ty S ->
@@ -40,32 +43,6 @@ Inductive loadable_ty : ty -> Prop :=
     udf_ty UDF ->
     loadable_ty UDF.
 
-
-
-(* TODO: What do we really need this for? *)
-(*
-Inductive well_formed_ty: ty -> Prop :=
-| wfTUnit:
-    well_formed_ty TUnit
-| wfTFn: forall T1 T2,
-    schema_ty T1 ->
-    schema_ty T2 ->
-    well_formed_ty (TFn T1 T2)
-| wfTPred: forall T,
-    schema_ty T ->
-    well_formed_ty (TPred T)
-| wfTNil:
-    well_formed_ty TNil
-| wfTCons: forall T T1 T2,
-    T = TCons T1 T2 ->
-    schema_ty T ->
-    well_formed_ty T
-| wfTInt:
-    well_formed_ty TInt
-| wfTBag: forall T,
-    well_formed_ty T ->
-    well_formed_ty (TBag T).
-*)
 
 (* Indicates a column within a schema. Used in the JOIN query's BY clauses. *)
 Definition col: Type := nat.
@@ -81,32 +58,6 @@ Inductive tm: Type :=
 | t_store: id -> tm
 | t_seq: tm -> tm -> tm.
 
-
-(*
-Module PartialMap.
-
-Definition partial_map (A:Type) := id -> option A.
-
-Definition empty {A:Type} : partial_map A := (fun _ => None). 
-
-Definition extend {A:Type} (Gamma : partial_map A) (x:id) (T : A) :=
-  fun x' => if eq_id_dec x x' then Some T else Gamma x'.
-
-Lemma extend_eq : forall A (ctxt: partial_map A) x T,
-  (extend ctxt x T) x = Some T.
-Proof.
-  intros. unfold extend. rewrite eq_id. auto.
-Qed.
-
-Lemma extend_neq : forall A (ctxt: partial_map A) x1 T x2,
-  x2 <> x1 ->
-  (extend ctxt x2 T) x1 = ctxt x1.
-Proof.
-  intros. unfold extend. rewrite neq_id; auto.
-Qed.
-
-End PartialMap.
-*)
 
 (* Provides evidence that a particular column of a schema is of type `TInt`. *)
 Inductive schema_column_is_int: ty -> col -> Prop :=
@@ -330,7 +281,14 @@ Hint Constructors has_type.
 
 (* ################################### *)
 
+
 End logical.
+
+
+
+(* ################################### *)
+
+
 
 Module physical.
 
