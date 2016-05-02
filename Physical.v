@@ -2,7 +2,7 @@
 Require Export SfLib.
 
 
-Module physical.
+Module Physical.
 
 
 Inductive ty: Type :=

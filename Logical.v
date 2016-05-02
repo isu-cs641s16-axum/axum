@@ -1,7 +1,7 @@
 
 Require Export SfLib.
 
-Module logical.
+Module Logical.
 
 Inductive ty: Type :=
 | TUnit : ty
