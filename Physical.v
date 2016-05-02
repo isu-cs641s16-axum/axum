@@ -61,17 +61,16 @@ Inductive loadable_ty : ty -> Prop :=
     loadable_ty UDF.
 
 
-(* Provides evidence that a particular column of a schema is of type `TInt`. *)
-Inductive schema_column_is_int: ty -> col -> Prop :=
-  | SchemaColumnIsIntZero: forall (T: ty),
-      schema_ty T ->
-      schema_column_is_int T O
-  | SchemaColumnIsIntSucc: forall (T THead TTail: ty) (c: col),
-      T = TCons THead TTail ->  (* Note that `THead` is unused. *)
-      schema_ty T ->
-      schema_column_is_int TTail c ->
-      schema_column_is_int T (S c).
-
+(* Provides evidence that the given column of a given schema has given type. *)
+Inductive schema_column_has_type: ty -> col -> ty -> Prop :=
+  | SchemaColumnIsIntZero: forall (TSchema T: ty),
+      schema_ty TSchema ->
+      schema_column_has_type TSchema O T
+  | SchemaColumnIsIntSucc: forall (TSchema TSchemaHead TSchemaTail T: ty) c,
+      TSchema = TCons TSchemaHead TSchemaTail ->  (* `THead` is unused. *)
+      schema_ty TSchema ->
+      schema_column_has_type TSchemaTail c T ->
+      schema_column_has_type TSchema (S c) T.
 
 
 (* ################################### *)
@@ -178,20 +177,20 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   | T_LReArrange : forall Gamma x c S,
       Gamma x = Some S ->
       schema_ty S ->
-      schema_column_is_int S c ->
+      schema_column_has_type S c TInt ->
       Gamma |- t_lrearrange x c \in S
 
   | T_GReArrange : forall Gamma x c S,
       Gamma x = Some S ->
       schema_ty S ->
-      schema_column_is_int S c ->
+      schema_column_has_type S c TInt ->
       Gamma |- t_grearrange x c \in S
 
   | T_Package : forall Gamma x c S1 S2,
       Gamma x = Some S1 ->
       schema_ty S1 ->
       schema_ty S2 ->
-      schema_column_is_int S1 c ->
+      schema_column_has_type S1 c TInt ->
       S2 = TCons TInt (TBag S1) ->
       Gamma |- t_package x c \in S2
 

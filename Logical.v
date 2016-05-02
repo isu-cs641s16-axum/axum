@@ -59,18 +59,16 @@ Inductive tm: Type :=
 | t_seq: tm -> tm -> tm.
 
 
-(* Provides evidence that a particular column of a schema is of type `TInt`. *)
-Inductive schema_column_is_int: ty -> col -> Prop :=
-
-  | SchemaColumnIsIntZero: forall (T: ty),
-      schema_ty T ->
-      schema_column_is_int T O
-
-  | SchemaColumnIsIntSucc: forall (T THead TTail: ty) (c: col),
-      T = TCons THead TTail ->  (* Note that `THead` is unused. *)
-      schema_ty T ->
-      schema_column_is_int TTail c ->
-      schema_column_is_int T (S c).
+(* Provides evidence that the given column of a given schema has given type. *)
+Inductive schema_column_has_type: ty -> col -> ty -> Prop :=
+  | SchemaColumnIsIntZero: forall (TSchema T: ty),
+      schema_ty TSchema ->
+      schema_column_has_type TSchema O T
+  | SchemaColumnIsIntSucc: forall (TSchema TSchemaHead TSchemaTail T: ty) c,
+      TSchema = TCons TSchemaHead TSchemaTail ->  (* `THead` is unused. *)
+      schema_ty TSchema ->
+      schema_column_has_type TSchemaTail c T ->
+      schema_column_has_type TSchema (S c) T.
 
 
 (* The concatenation of schemas T1 and T2 is T3. *)
@@ -223,7 +221,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma x = Some S1 ->
       schema_ty S1 ->
       schema_ty S2 ->
-      schema_column_is_int S1 c ->
+      schema_column_has_type S1 c TInt ->
       S2 = TCons TInt (TBag S1) ->
       Gamma |- t_group x c \in S2
 
@@ -232,8 +230,8 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma y = Some(S2) ->
       schema_ty S1 ->
       schema_ty S2 ->
-      schema_column_is_int S1 cx ->
-      schema_column_is_int S2 cy ->
+      schema_column_has_type S1 cx TInt ->
+      schema_column_has_type S2 cy TInt ->
       concatenated_schema S1 S2 S3 ->
       Gamma |- t_join x cx y cx \in S3
 
