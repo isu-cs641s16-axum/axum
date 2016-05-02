@@ -210,20 +210,20 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       schema_ty S ->
       Gamma |- t_filter x y \in S
 
-  | T_ForEach : forall Gamma x y S1 S2,
-      Gamma x = Some(S1) ->
-      Gamma y = Some(TFn S1 S2) ->
-      schema_ty S1 ->
-      schema_ty S2 ->
-      Gamma |- t_foreach x y \in S2
+  | T_ForEach : forall Gamma x y S S',
+      Gamma x = Some(S) ->
+      Gamma y = Some(TFn S S') ->
+      schema_ty S ->
+      schema_ty S' ->
+      Gamma |- t_foreach x y \in S'
 
-  | T_Group : forall Gamma x c S1 S2,
-      Gamma x = Some S1 ->
-      schema_ty S1 ->
-      schema_ty S2 ->
-      schema_column_has_type S1 c TInt ->
-      S2 = TCons TInt (TBag S1) ->
-      Gamma |- t_group x c \in S2
+  | T_Group : forall Gamma x c S S',
+      Gamma x = Some S ->
+      schema_ty S ->
+      schema_ty S' ->
+      schema_column_has_type S c TInt ->
+      S' = TCons TInt (TBag S) ->
+      Gamma |- t_group x c \in S'
 
   | T_Join : forall Gamma x y cx cy S1 S2 S3,
       Gamma x = Some(S1) ->
