@@ -292,6 +292,7 @@ End logical.
 
 Module physical.
 
+
 Inductive ty: Type :=
 | TUnit : ty
 | TFn : ty -> ty -> ty
@@ -301,7 +302,9 @@ Inductive ty: Type :=
 | TInt: ty               (* An Atomic Schema Attribute Type *)
 | TBag: ty -> ty.        (* A Compound Schema Attribute Type *)
 
+
 Definition col: Type := nat.
+
 
 Inductive tm: Type :=
  | t_filter: id -> id -> tm
@@ -314,6 +317,7 @@ Inductive tm: Type :=
  | t_store: id -> tm
  | t_seq: tm -> tm -> tm.
 
+
 Inductive schema_ty : ty -> Prop :=
 | STNil:
     schema_ty TNil
@@ -325,6 +329,7 @@ Inductive schema_ty : ty -> Prop :=
     schema_ty T2 ->
     schema_ty (TCons (TBag T1) T2).
 
+
 Inductive udf_ty : ty -> Prop := 
 | UDFTFn: forall S1 S2,
     schema_ty S1 ->
@@ -333,6 +338,7 @@ Inductive udf_ty : ty -> Prop :=
 | UDFTPred: forall S,
     schema_ty S ->
     udf_ty S.
+
 
 Inductive loadable_ty : ty -> Prop :=
 | LTSchema: forall S,
@@ -435,9 +441,12 @@ conventions:
 *)
 **)
 
+
 Definition context := partial_map ty.
 
+
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
+
 
 Inductive has_type : context -> tm -> ty -> Prop :=
 
@@ -516,6 +525,8 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
 Hint Constructors has_type.
 
+
 (* ################################### *)
+
 
 End physical.
