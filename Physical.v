@@ -1,9 +1,6 @@
-
-Require Export SfLib.
-
+Require Import Pig.Base.
 
 Module Physical.
-
 
 Inductive ty: Type :=
 | TUnit : ty
@@ -240,4 +237,4 @@ Hint Constructors has_type.
 (* ################################### *)
 
 
-End physical.
+End Physical.
