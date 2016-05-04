@@ -102,7 +102,8 @@ VFILES:=Logical.v\
   Grouping.v\
   Joining.v\
   Rearranging.v\
-  Ty.v
+  Ty.v\
+  Semantics.v
 
 ifneq ($(filter-out archclean clean cleanall printenv,$(MAKECMDGOALS)),)
 -include $(addsuffix .d,$(VFILES))

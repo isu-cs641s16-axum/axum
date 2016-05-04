@@ -8,3 +8,4 @@
 ./Joining.v
 ./Rearranging.v
 ./Ty.v
+./Semantics.v
