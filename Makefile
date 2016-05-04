@@ -97,7 +97,12 @@ endif
 VFILES:=Logical.v\
   Physical.v\
   Base.v\
-  SfLib.v
+  SfLib.v\
+  Schema.v\
+  Grouping.v\
+  Joining.v\
+  Rearranging.v\
+  Ty.v
 
 ifneq ($(filter-out archclean clean cleanall printenv,$(MAKECMDGOALS)),)
 -include $(addsuffix .d,$(VFILES))
