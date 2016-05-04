@@ -54,21 +54,12 @@ Proof.
   - admit.
 Admitted.
 
-(* The type of each tuple within a relation with the given schema. *)
-Fixpoint support (s: schema_ty) : Type :=
-  match s with
-  | STyNil => unit
-  | a *** => helper a
-  | a *** s' => (helper a) * support s'
-  end
-with helper(c: col_ty) : Type :=
-  match c with
-  | CTyNat => nat
-  | CTyBag s_nested => list (support s_nested)
-  end.
 
+Inductive filter_fn : Set :=
+| FilterFn: id -> schema_ty -> filter_fn.
 
-Definition relation (s: schema_ty) : Type := list (support s).
+Inductive map_fn : Set :=
+| MapFn: id -> schema_ty -> map_fn.
 
 
 (* IDEA: Maybe we don't need to model the tuples themselves, just their types.
@@ -80,19 +71,3 @@ Definition relation (s: schema_ty) : Type := list (support s).
 Fixpoint fuse_tuples (s1 s2: schema_ty) (t1: support s1) (t2: support s2) :
                                      support (schema_concatenation s1 s2) := ???
 *)
-
-
-(* An example schema with just one column: a nat column: *)
-Example nat_schema : schema_ty := (CTyNat ***).
-Example nat_tuple : support nat_schema := 1.
-Example nat_relation : relation nat_schema := [1; 2].
-
-(* An example schema with just one column: a bag (of nat): *)
-Example bag_schema := (CTyBag (CTyNat ***) ***).
-Example bag_tuple : support bag_schema := [1; 1].
-Example bag_relation : relation bag_schema := [[1; 2]; [1; 2]].
-
-(* An example schema with two cols: nat and bag of nat. *)
-Example nat_bag_schema : schema_ty := CTyNat *** CTyBag (CTyNat ***) ***.
-Example nat_bag_tuple : support nat_bag_schema := (1, [1; 2; 1]).
-Example nat_bag_relation : relation nat_bag_schema := [(1, [1; 2; 1]); (2, [])].

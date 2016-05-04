@@ -7,5 +7,6 @@
 ./Grouping.v
 ./Joining.v
 ./Rearranging.v
-./Ty.v
+./Types.v
 ./Semantics.v
+./Relations.v
