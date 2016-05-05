@@ -30,7 +30,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   | T_Group : forall Gamma x c S,
       Gamma x = Some (TSchema S) ->
       can_group_by S c ->
-      Gamma |- t_group x c \in TSchema (CTyNat *** (CTyBag S) ***)
+      Gamma |- t_group x c \in TSchema (group_schema S)
 
   | T_Join : forall Gamma x y cx cy S1 S2 S3,
       Gamma x = Some(TSchema S1) ->
