@@ -2,31 +2,50 @@ Require Export Coq.Sets.Multiset.
 Require Export Pig.Schema.
 
 
-(* The type of each tuple within a relation with the given schema. *)
-Fixpoint support (s: schema_ty) : Type :=
-  match s with
-  | STyNil => unit
-  | a *** => helper a
-  | a *** s' => (helper a) * support s'
-  end
-with helper(c: col_ty) : Type :=
-  match c with
-  | CTyNat => nat
-  | CTyBag s_nested => multiset (support s_nested)
-  end.
-
-
 Inductive relation (s: schema_ty) : Type := 
 | Relation: multiset (support s) -> relation s.
 
 
-(* TODO: relation equality. *)
+Definition relation_data (s: schema_ty) (r: relation s) : multiset (support s) :=
+  match r with
+  | Relation _ mset => mset
+  end.
+
+
+Definition relation_eq (s: schema_ty) (r1 r2: relation s) : Prop :=
+  meq (relation_data s r1) (relation_data s r2).
 
 
 (* An example schema with just one column: a nat column: *)
-Example nat_schema : schema_ty := (CTyNat ***).
+
+Example nat_schema : schema_ty := ( CTyNat *** ).
 Example nat_tuple : support nat_schema := 1.
-Example nat_relation : relation nat_schema := Relation nat_schema (EmptyBag nat).
+Example empty_nat_relation : relation nat_schema :=
+  Relation nat_schema (EmptyBag nat).
+
+(* Can be used to generate various example singleton relations for various
+   schema using the `SingletonBag` definition. *)
+Example singleton_relation (s: schema_ty) :=
+  (SingletonBag (support_eq s) (support_eq_dec s)).
+
+
+(* TODO: Finish this example. *)
+(*
+Example singleton_nat_relation : relation nat_schema :=
+  Relation nat_schema (singleton_relation nat_schema 5).
+Example singleton_nat_relation' : relation nat_schema :=
+  Relation nat_schema (Bag (fun (n: nat) => match n with
+                                            | 5 => 1
+                                            | _ => 0
+                                            end)).
+Lemma two_singletons_are_eq : relation_eq nat_schema singleton_nat_relation singleton_nat_relation'.
+  unfold relation_eq. simpl.
+  unfold meq. simpl.
+  intro. induction a.
+  - (* a = O *) admit.
+  - (* a = S a *) admit.
+Admitted.
+*)
 
 (* An example schema with just one column: a bag (of nat): *)
 Example bag_schema := (CTyBag (CTyNat ***) ***).
