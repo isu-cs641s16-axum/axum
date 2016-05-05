@@ -16,6 +16,13 @@ Definition relation_eq (s: schema_ty) (r1 r2: relation s) : Prop :=
   meq (relation_data s r1) (relation_data s r2).
 
 
+Definition relation_multiplicity (s: schema_ty) (r: relation s) (tup: support s) :=
+  multiplicity (relation_data s r) tup.
+
+
+(* TODO *)
+(* Definition relation_proj (s: schema_ty) (r: relation s) (c: col) := ??? *)
+
 (* An example schema with just one column: a nat column: *)
 
 Example nat_schema : schema_ty := ( CTyNat *** ).

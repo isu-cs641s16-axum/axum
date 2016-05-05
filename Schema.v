@@ -3,8 +3,8 @@ Require Import SfLib.
 
 
 Inductive schema_ty : Set :=
-  | STyPair: col_ty -> schema_ty -> schema_ty
   | STyNil: schema_ty
+  | STyPair: col_ty -> schema_ty -> schema_ty
 with col_ty : Set :=
   | CTyNat: col_ty
   | CTyBag: schema_ty -> col_ty.
@@ -28,6 +28,18 @@ Inductive schema_column_has_type: schema_ty -> col -> col_ty -> Prop :=
       schema_column_has_type s' i c'.
 
 
+Fixpoint schema_columns (s: schema_ty) :=
+  match s with
+  | STyNil => 0
+  | STyPair _ s' => 1 + (schema_columns s')
+  end.
+
+
+(* Get the type of the supports column *)
+(* TODO *)
+(* Fixpoint support_idx (s: schema_ty) (c: col) (pf: c < (schema_columns s)) := ??? *)
+
+
 (* The type of each tuple within a relation with the given schema. *)
 Fixpoint support (s: schema_ty) : Type :=
   match s with
@@ -49,3 +61,9 @@ Lemma support_eq_dec (s: schema_ty):
   forall (x y : support s), {(support_eq s) x y} + {~ (support_eq s) x y}.
 Proof.
   intros. unfold support_eq. Admitted.
+
+
+(* A multiset of all of the nat keys in the indicated column. *)
+(* TODO *)
+(* Fixpoint tuple_idx (s: schema_ty) (tup: support s) (c: col) : multiset n := ??? *)
+

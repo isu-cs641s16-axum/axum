@@ -12,11 +12,17 @@ Definition group_schema (s: schema_ty) : schema_ty :=
   (CTyNat *** (CTyBag s) ***).
 
 
+(*
+Definition grouped_keysets_ok (s: schema_ty) (r: relation s) (c: col) (r': relation (group_schema s)) : Prop :=
+  forall (k: nat), (relation_multiplicity s r k) > 1.
+*)
+
 Inductive grouped (s: schema_ty) : relation s -> col -> relation (group_schema s) -> Prop :=
 | Grouped: forall r c r',
-    (* TODO: Add constraints. *)
+    can_group_by s c ->
+    (* TODO *)
+    (* grouped_keysets_ok -> *)
     grouped s r c r'.
 
 
 Definition can_package_by := can_group_by.
-
