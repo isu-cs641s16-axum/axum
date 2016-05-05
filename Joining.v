@@ -11,6 +11,8 @@ Fixpoint schema_concatenation (s1 s2 : schema_ty): schema_ty :=
   | c *** s1' => c *** (schema_concatenation s1' s2)
   end.
 
+Notation "x +++ y" := (schema_concatenation x y) (at level 51, right associativity).
+
 
 Inductive concatenated_schema: schema_ty -> schema_ty -> schema_ty -> Prop :=
 | CatSchemaZeroAttr: forall s,
@@ -42,7 +44,10 @@ Fixpoint fuse_tuples (s1 s2: schema_ty) (t1: support s1) (t2: support s2) :
 *)
 
 
-Inductive joined (s1 s2: schema_ty): relation s1 -> col -> relation s2 -> col -> Prop :=
-  | Joined : forall (r1: relation s1) (r2: relation s2) (c1 c2: col),
+Inductive joined (s1 s2: schema_ty): relation s1 -> col ->
+                                     relation s2 -> col ->
+                                     relation (s1 +++ s2) -> Prop :=
+  | Joined : forall (r1: relation s1) (r2: relation s2) (c1 c2: col)
+                    (r': relation (s1 +++ s2)),
      (* TODO: Add constraints. *)
-     joined s1 s2 r1 c1 r2 c2.
+     joined s1 s2 r1 c1 r2 c2 r'.

@@ -3,7 +3,6 @@ Require Export Pig.Relations.
 
 Definition filter (s: schema_ty) : Type := (support s) -> bool.
 
-
 Definition is_filtered (s:schema_ty) (r: relation s) (f:filter s) (r': relation s) :=
   let m  := (relation_data s r) in
   let m' := (relation_data s r') in

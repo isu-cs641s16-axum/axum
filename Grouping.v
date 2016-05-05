@@ -17,11 +17,11 @@ Definition grouped_keysets_ok (s: schema_ty) (r: relation s) (c: col) (r': relat
   forall (k: nat), (relation_multiplicity s r k) > 1.
 *)
 
-Inductive grouped (s: schema_ty) : relation s -> col -> relation (group_schema s) -> Prop :=
+Inductive grouped (s: schema_ty) : relation s -> col ->
+                                   relation (group_schema s) -> Prop :=
 | Grouped: forall r c r',
     can_group_by s c ->
-    (* TODO *)
-    (* grouped_keysets_ok -> *)
+    (* TODO: Add constraints. *)
     grouped s r c r'.
 
 
