@@ -16,30 +16,12 @@ with helper(c: col_ty) : Type :=
   end.
 
 
-(* Definition relation : Type := forall s: schema_ty, multiset (support s). *)
-
-
 Inductive relation (s: schema_ty) : Type := 
 | Relation: multiset (support s) -> relation s.
 
 
-(*
-Definition relation_schema (r: relation) : schema_ty.
-Proof. inversion r. apply s. Qed.  (* Use proof tactics to extract schema. *)
+(* TODO: relation equality. *)
 
-Definition relation_data (r: relation) : multiset (support (relation_schema r)).
-Proof. inversion r. assert (s = relation_schema r).
-- 
-
-
-Definition relation_has_schema (r: relation) (s: schema_ty) : Prop :=
-  relation_schema r = s.
-
-Definition relation_eq (s: schema_ty) (r1 r2: relation) : Prop :=
-  relation_has_schema r1 s ->
-  relation_has_schema r2 s ->
-  .
-*)
 
 (* An example schema with just one column: a nat column: *)
 Example nat_schema : schema_ty := (CTyNat ***).
