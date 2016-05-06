@@ -99,6 +99,8 @@ VFILES:=Logical.v\
   Base.v\
   SfLib.v\
   Schema.v\
+  Filtering.v\
+  Mapping.v\
   Grouping.v\
   Joining.v\
   Rearranging.v\
